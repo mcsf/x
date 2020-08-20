@@ -11,6 +11,14 @@ _Hands-off task management_
 * Place `x` and `o` anywhere included in your shell's `$PATH`.
 * Make sure they can be executed with `chmod +x <file>`.
 
+## Requirements
+
+Assumes a POSIX-ish environment. Currently only tested on macOS, this should however work on most UNIX-like systems.
+
+* [fzf](https://github.com/junegunn/fzf) (>= 0.22)
+* bash (>= 3.2)
+* BSD- or Linux-compatible: date, getopt, mktemp
+* POSIX: cat, cut, grep, ls, tail, touch, rm
 
 ## FAQ
 
