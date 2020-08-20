@@ -95,16 +95,34 @@ print_list() {
 archive_list() {
 	local last_date dst
 	last_date=$(tail -1 "$X_LOG" | cut -d' ' -f1)
-	if ! dst=$(date -jf "%Y-%m-%d" "$last_date" "$X_ARCHIVE_TEMPLATE"); then
-		echo "Parsing failed"
-		exit 1
-	fi
+	dst=$(parse_date "%Y-%m-%d" "$last_date" "$X_ARCHIVE_TEMPLATE")
 	if [ -f "$dst" ]; then
 		echo "$dst: file already exists"
 		exit 1
 	fi
 	cat <(echo "== $last_date ==") <(cat "$X_LOG") > "$dst"
 	echo Archived to "$dst"
+}
+
+parse_date() {
+	local dst in_format input out_format
+	read -r in_format input out_format <<< "$@"
+	case "$(uname)" in
+		Darwin)
+			if ! dst=$(date -jf "$in_format" "$input" "$out_format"); then
+				echo "Parsing failed"
+				exit 1
+			fi ;;
+		Linux)
+			if ! dst=$(date -D "$in_format" -d "$input" "$out_format"); then
+				echo "Parsing failed"
+				exit 1
+			fi ;;
+		*)
+			echo "Unsupported environment: $(uname)"
+			exit 1 ;;
+	esac
+	echo "$dst"
 }
 
 clear_list() {
