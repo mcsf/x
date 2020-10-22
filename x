@@ -95,7 +95,12 @@ print_list() {
 archive_list() {
 	local last_date dst
 	last_date=$(tail -1 "$X_LOG" | cut -d' ' -f1)
-	dst=$(parse_date "%Y-%m-%d" "$last_date" "$X_ARCHIVE_TEMPLATE")
+	read -rp "Date ($last_date): "
+	[ -n "$REPLY" ] && last_date="$REPLY"
+	if ! dst=$(parse_date "%Y-%m-%d" "$last_date" "$X_ARCHIVE_TEMPLATE"); then
+		echo "Parsing failed"
+		exit 1
+	fi
 	if [ -f "$dst" ]; then
 		echo "$dst: file already exists"
 		exit 1
