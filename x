@@ -105,7 +105,7 @@ archive_list() {
 		echo "$dst: file already exists"
 		exit 1
 	fi
-	cat <(echo "== $last_date ==") <(cat "$X_LOG") > "$dst"
+	cat <(echo "== $last_date ==") "$X_LOG" > "$dst"
 	echo Archived to "$dst"
 }
 
