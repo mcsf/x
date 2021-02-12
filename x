@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# TODO (2020-11-23) in `mark_open_item`, append date if different from original
+
+# TODO (2020-11-23) detect stdout type in `o`
+
 CMD=$(basename "$0")
 CONF="$HOME/.x.conf"
 # shellcheck disable=1090
@@ -107,6 +111,14 @@ archive_list() {
 	fi
 	cat <(echo "== $last_date ==") "$X_LOG" > "$dst"
 	echo Archived to "$dst"
+	read -rp "Clear closed items? (Y/n) "
+	[ "$REPLY" != "n" ] && clear_done_items
+}
+
+clear_done_items() {
+	tmp=$(mktemp)
+	grep -F "[ ]" "$X_LOG" > "$tmp"
+	mv "$tmp" "$X_LOG"
 }
 
 parse_date() {
