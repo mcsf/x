@@ -151,12 +151,14 @@ clear_list() {
 }
 
 search_logs() {
-	local file_pattern
-	file_pattern="$X_ARCHIVE_TEMPLATE"
-	file_pattern=${file_pattern/#+/}
-	file_pattern=${file_pattern//%Y-%m-%d/*}
-	# shellcheck disable=2012,2086
-	file=$(ls -r1 $file_pattern | fzf) || exit 1
+	local file_pattern logs_dir file
+	file_pattern=${X_ARCHIVE_TEMPLATE/#+/}
+	logs_dir=$(dirname "$file_pattern")
+	# The following assumes any file in $logs_dir is a log. If this ever proves
+	# unsufficient, find files inside $logs_dir based on $X_ARCHIVE_TEMPLATE.
+	# Until then... YAGNI.
+	file=$(cd "$logs_dir" && (find -- * | fzf --tac)) || exit 1
+	file="$logs_dir/$file"
 	${EDITOR:-vim} "$file"
 }
 
