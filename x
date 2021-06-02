@@ -22,6 +22,7 @@ main() {
 	# shellcheck disable=2086
 	set -- $args
 	ACTION=list_items
+	ACTION_ARGS=""
 	INTERACTIVE=true
 	for i; do
 		case "$i" in
@@ -36,7 +37,7 @@ main() {
 		esac
 	done
 	[[ $# != 0 ]] && ACTION=add_item
-	$ACTION "$@"
+	$ACTION "$ACTION_ARGS" "$@"
 }
 
 usage() {
@@ -83,9 +84,12 @@ mark_open_item() {
 }
 
 add_item() {
-	local mark
+	local trimmed mark
+	trimmed="$*"
+	trimmed="${trimmed## }"
+	trimmed="${trimmed%% }"
 	[[ "$CMD" == "x" ]] && mark="[X]" || mark="[ ]"
-	echo "$(date "+%Y-%m-%d %H:%M")" "$mark" "$@" >> "$X_LOG"
+	echo "$(date "+%Y-%m-%d %H:%M")" "$mark" "$trimmed" >> "$X_LOG"
 	exit 0
 }
 
