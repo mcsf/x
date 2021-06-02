@@ -15,7 +15,7 @@ X_ARCHIVE_TEMPLATE=${X_ARCHIVE_TEMPLATE:-+$X_BASE/tasks-%Y-%m-%d.txt}
 main() {
 	local args
 	# shellcheck disable=2048 disable=2086
-	if ! args=$(getopt Iacehlp $*); then
+	if ! args=$(getopt IacehlpP: $*); then
 		usage
 		exit 2
 	fi
@@ -33,6 +33,7 @@ main() {
 			-h) ACTION=usage ; shift ;;
 			-l) ACTION=search_logs ; shift ;;
 			-p) ACTION=print_list ; shift ;;
+			-P) ACTION=print_since ; shift; ACTION_ARGS="$1"; shift ;;
 			--) shift ; break ;;
 		esac
 	done
@@ -55,12 +56,13 @@ usage: x [task ...]
   \`x\` for a closed item.
 
 usage: $CMD [-acehlp]
- -a	Commit to-do list to daily log file
- -c	Clear to-do list
- -e	Edit to-do list with text editor, per \$EDITOR
- -h	Show this usage screen
- -l	Search past logs and open them with \$EDITOR
- -p	Print to-do list, unfiltered
+ -a		Commit to-do list to daily log file
+ -c		Clear to-do list
+ -e		Edit to-do list with text editor, per \$EDITOR
+ -h		Show this usage screen
+ -l		Search past logs and open them with \$EDITOR
+ -p		Print to-do list, unfiltered
+ -P DATE	Print a log of closed to-do items matching DATE
 EOD
 }
 
@@ -99,6 +101,23 @@ edit_list() {
 
 print_list() {
 	cat "$X_LOG"
+}
+
+print_since() {
+	local date file_pattern logs_dir
+	date="$1"
+	file_pattern=${X_ARCHIVE_TEMPLATE/#+/}
+	logs_dir=$(dirname "$file_pattern")
+	cd "$logs_dir" || exit 1
+	if which -s dateseq; then
+		dateseq "$date" | while read -r day; do
+			# shellcheck disable=2086 disable=2144
+			[ -f *$day* ] && cat -- *$day*
+		done | awk '/\[ \]/{next} /^[[:digit:]]/{$0="  " substr($0,22)} {print}'
+	else
+		echo "Missing dependency: dateseq"
+		exit 1
+	fi
 }
 
 archive_list() {
