@@ -14,7 +14,8 @@ X_ARCHIVE_TEMPLATE=${X_ARCHIVE_TEMPLATE:-+$X_BASE/tasks-%Y-%m-%d.txt}
 
 main() {
 	local args
-	if ! args=$(getopt Iacehlp "$@"); then
+	# shellcheck disable=2048 disable=2086
+	if ! args=$(getopt Iacehlp $*); then
 		usage
 		exit 2
 	fi
