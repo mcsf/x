@@ -78,11 +78,14 @@ list_items() {
 }
 
 mark_open_item() {
-	local tmp old_task new_task
+	local tmp old_task old_date old_hour new_task
 	tmp=$(mktemp)
 	old_task=$(grep -F '[ ]' "$X_LOG" | fzf --tac) || exit 1
-	new_task=${old_task//\[ \]/[X]}
-	(grep -Fv "$old_task" "$X_LOG"; echo -n "$new_task"; date "+ [%H:%M]") > "$tmp"
+	read -r old_date old_hour new_task <<< "${old_task//\[ \]/[X]}"
+	(
+		grep -Fv "$old_task" "$X_LOG"
+		echo "$(date "+%Y-%m-%d %H:%M")" "$new_task" "[$old_date $old_hour]"
+	) > "$tmp"
 	mv "$tmp" "$X_LOG"
 }
 
