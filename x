@@ -81,7 +81,7 @@ mark_open_item() {
 	tmp=$(mktemp)
 	old_task=$(grep -F '[ ]' "$X_LOG" | fzf) || exit 1
 	new_task=${old_task//\[ \]/[X]}
-	cat <(grep -Fv "$old_task" "$X_LOG") <(echo -n "$new_task") <(date "+ [%H:%M]") > "$tmp"
+	(grep -Fv "$old_task" "$X_LOG"; echo -n "$new_task"; date "+ [%H:%M]") > "$tmp"
 	mv "$tmp" "$X_LOG"
 }
 
