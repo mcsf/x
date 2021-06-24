@@ -72,7 +72,8 @@ list_items() {
 	else
 		local mark
 		[[ "$CMD" == "x" ]] && mark="[X]" || mark="[ ]"
-		grep -F "$mark" "$X_LOG"
+		grep -F "$mark" "$X_LOG" \
+			| awk '{ if ($1 == prev) { $1 = "          " } else { prev = $1 } print }'
 	fi
 }
 
