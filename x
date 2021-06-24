@@ -90,12 +90,10 @@ mark_open_item() {
 }
 
 add_item() {
-	local trimmed mark
-	trimmed="$*"
-	trimmed="${trimmed## }"
-	trimmed="${trimmed%% }"
+	local item mark
+	read -r item <<< "$*" # Trim
 	[[ "$CMD" == "x" ]] && mark="[X]" || mark="[ ]"
-	echo "$(date "+%Y-%m-%d %H:%M")" "$mark" "$trimmed" >> "$X_LOG"
+	echo "$(date "+%Y-%m-%d %H:%M")" "$mark" "$item" >> "$X_LOG"
 	exit 0
 }
 
