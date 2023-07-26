@@ -137,7 +137,7 @@ archive_list() {
 		echo "$dst: file already exists"
 		exit 1
 	fi
-	cat <(echo "== $last_date ==") "$X_LOG" > "$dst"
+	(echo "== $last_date =="; cat "$X_LOG") > "$dst"
 	echo Archived to "$dst"
 	read -rp "Clear closed items? (Y/n) "
 	[ "$REPLY" != "n" ] && clear_done_items
