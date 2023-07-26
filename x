@@ -4,6 +4,8 @@
 
 # TODO (2020-11-23) detect stdout type in `o`
 
+FZF=${FZF:-fzf --tac}
+
 CMD=$(basename "$0")
 CONF="$HOME/.x.conf"
 # shellcheck disable=1090
@@ -80,7 +82,7 @@ list_items() {
 mark_open_item() {
 	local tmp old_task old_date old_hour new_task
 	tmp=$(mktemp)
-	old_task=$(grep -F '[ ]' "$X_LOG" | fzf --tac) || exit 1
+	old_task=$(grep -F '[ ]' "$X_LOG" | $FZF) || exit 1
 	read -r old_date old_hour new_task <<< "${old_task//\[ \]/[X]}"
 	(
 		grep -Fv "$old_task" "$X_LOG"
@@ -183,7 +185,7 @@ search_logs() {
 	# The following assumes any file in $logs_dir is a log. If this ever proves
 	# unsufficient, find files inside $logs_dir based on $X_ARCHIVE_TEMPLATE.
 	# Until then... YAGNI.
-	file=$(cd "$logs_dir" && (find -- * | fzf --tac)) || exit 1
+	file=$(cd "$logs_dir" && (find -- * | $FZF)) || exit 1
 	file="$logs_dir/$file"
 	${EDITOR:-vim} "$file"
 }
