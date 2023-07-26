@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # TODO (2020-11-23) in `mark_open_item`, append date if different from original
 
@@ -9,13 +9,12 @@ FZF=${FZF:-fzf --tac}
 CMD=$(basename "$0")
 CONF="$HOME/.x.conf"
 # shellcheck disable=1090
-[ -f "$CONF" ] && source "$CONF"
+[ -f "$CONF" ] && . "$CONF"
 X_BASE=${X_BASE:-$HOME/Desktop}
 X_LOG=${X_LOG:-$X_BASE/log.txt}
 X_ARCHIVE_TEMPLATE=${X_ARCHIVE_TEMPLATE:-$X_BASE/tasks-%Y-%m-%d.txt}
 
 main() {
-	local args
 	# shellcheck disable=2048 disable=2086
 	if ! args=$(getopt IacehlpP: $*); then
 		usage
@@ -39,7 +38,7 @@ main() {
 			--) shift ; break ;;
 		esac
 	done
-	[[ $# != 0 ]] && ACTION=add_item
+	[ $# -gt 0 ] && ACTION=add_item
 	$ACTION "$ACTION_ARGS" "$@"
 }
 
@@ -69,21 +68,21 @@ EOD
 }
 
 list_items() {
-	if [[ "$CMD" == "o" ]] && [[ "$INTERACTIVE" == "true" ]]; then
+	if [ "$CMD" = "o" ] && [ "$INTERACTIVE" = "true" ]; then
 		mark_open_item
 	else
-		local mark
-		[[ "$CMD" == "x" ]] && mark="[X]" || mark="[ ]"
+		[ "$CMD" = "x" ] && mark="[X]" || mark="[ ]"
 		grep -F "$mark" "$X_LOG" \
 			| awk '{ if ($1 == prev) { $1 = "          " } else { prev = $1 } print }'
 	fi
 }
 
 mark_open_item() {
-	local tmp old_task old_date old_hour new_task
 	tmp=$(mktemp)
 	old_task=$(grep -F '[ ]' "$X_LOG" | $FZF) || exit 1
-	read -r old_date old_hour new_task <<< "${old_task//\[ \]/[X]}"
+	read -r old_date old_hour new_task << EOF
+$(echo "$old_task" | sed 's/\[ \]/[X]/')
+EOF
 	(
 		grep -Fv "$old_task" "$X_LOG"
 		echo "$(date "+%Y-%m-%d %H:%M")" "$new_task" "[$old_date $old_hour]"
@@ -92,9 +91,10 @@ mark_open_item() {
 }
 
 add_item() {
-	local item mark
-	read -r item <<< "$*" # Trim
-	[[ "$CMD" == "x" ]] && mark="[X]" || mark="[ ]"
+	read -r item << EOF # Trim
+$*
+EOF
+	[ "$CMD" = "x" ] && mark="[X]" || mark="[ ]"
 	echo "$(date "+%Y-%m-%d %H:%M")" "$mark" "$item" >> "$X_LOG"
 	exit 0
 }
@@ -108,7 +108,6 @@ print_list() {
 }
 
 print_since() {
-	local date file_pattern logs_dir
 	date="$1"
 	file_pattern="$X_ARCHIVE_TEMPLATE"
 	logs_dir=$(dirname "$file_pattern")
@@ -125,9 +124,9 @@ print_since() {
 }
 
 archive_list() {
-	local last_date dst
 	last_date=$(tail -1 "$X_LOG" | cut -d' ' -f1)
-	read -rp "Date ($last_date): "
+	printf "Date (%s): " "$last_date"
+	read -r REPLY
 	[ -n "$REPLY" ] && last_date="$REPLY"
 	if ! dst=$(parse_date "%Y-%m-%d" "$last_date" "+$X_ARCHIVE_TEMPLATE"); then
 		echo "Parsing failed"
@@ -139,7 +138,8 @@ archive_list() {
 	fi
 	(echo "== $last_date =="; cat "$X_LOG") > "$dst"
 	echo Archived to "$dst"
-	read -rp "Clear closed items? (Y/n) "
+	printf "Clear closed items? (Y/n) "
+	read -r REPLY
 	[ "$REPLY" != "n" ] && clear_done_items
 }
 
@@ -150,8 +150,9 @@ clear_done_items() {
 }
 
 parse_date() {
-	local dst in_format input out_format
-	read -r in_format input out_format <<< "$@"
+	read -r in_format input out_format << EOF
+$@
+EOF
 	case "$(uname)" in
 		Darwin)
 			if ! dst=$(date -jf "$in_format" "$input" "$out_format"); then
@@ -171,16 +172,15 @@ parse_date() {
 }
 
 clear_list() {
-	local answer
-	read -rp "Clear tasks? (y/N) " answer
-	[[ "$answer" != "y" ]] && exit 1
+	printf "Clear tasks? (y/N) "
+	read -r answer
+	[ "$answer" != "y" ] && exit 1
 	rm -f "$X_LOG"
 	touch "$X_LOG"
 }
 
 search_logs() {
-	local file_pattern logs_dir file
-	file_pattern=${X_ARCHIVE_TEMPLATE/#+/}
+	file_pattern="$X_ARCHIVE_TEMPLATE"
 	logs_dir=$(dirname "$file_pattern")
 	# The following assumes any file in $logs_dir is a log. If this ever proves
 	# unsufficient, find files inside $logs_dir based on $X_ARCHIVE_TEMPLATE.
