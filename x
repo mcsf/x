@@ -12,7 +12,7 @@ CONF="$HOME/.x.conf"
 [ -f "$CONF" ] && source "$CONF"
 X_BASE=${X_BASE:-$HOME/Desktop}
 X_LOG=${X_LOG:-$X_BASE/log.txt}
-X_ARCHIVE_TEMPLATE=${X_ARCHIVE_TEMPLATE:-+$X_BASE/tasks-%Y-%m-%d.txt}
+X_ARCHIVE_TEMPLATE=${X_ARCHIVE_TEMPLATE:-$X_BASE/tasks-%Y-%m-%d.txt}
 
 main() {
 	local args
@@ -110,7 +110,7 @@ print_list() {
 print_since() {
 	local date file_pattern logs_dir
 	date="$1"
-	file_pattern=${X_ARCHIVE_TEMPLATE/#+/}
+	file_pattern="$X_ARCHIVE_TEMPLATE"
 	logs_dir=$(dirname "$file_pattern")
 	cd "$logs_dir" || exit 1
 	if which -s dateseq; then
@@ -129,7 +129,7 @@ archive_list() {
 	last_date=$(tail -1 "$X_LOG" | cut -d' ' -f1)
 	read -rp "Date ($last_date): "
 	[ -n "$REPLY" ] && last_date="$REPLY"
-	if ! dst=$(parse_date "%Y-%m-%d" "$last_date" "$X_ARCHIVE_TEMPLATE"); then
+	if ! dst=$(parse_date "%Y-%m-%d" "$last_date" "+$X_ARCHIVE_TEMPLATE"); then
 		echo "Parsing failed"
 		exit 1
 	fi
