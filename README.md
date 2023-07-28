@@ -14,17 +14,17 @@ _Hands-off task management_
 ## Requirements
 
 * [fzf](https://github.com/junegunn/fzf) (>= 0.22)
-* [dateseq](https://github.com/mcsf/dateseq) for the `-P` option
+* [dateseq](https://github.com/mcsf/dateseq) (or compatible implementation) for the `-P` option
 
 Beyond that, a POSIX-ish environment is assumed. Currently only tested on macOS, this should however work on most UNIX-like systems.
 
-* bash (>= 3.2)
+* POSIX shell
 * BSD- or Linux-compatible: date, getopt, mktemp
 * POSIX: cat, cut, grep, ls, tail, touch, rm
 
 ## FAQ
 
-* **But... this is in Bash!**
+* **But... this is in ~Bash~ sh!**
 
 That's not a question.
 
