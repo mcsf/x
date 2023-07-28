@@ -150,9 +150,9 @@ clear_done_items() {
 }
 
 parse_date() {
-	read -r in_format input out_format << EOF
-$@
-EOF
+	in_format="$1"
+	input="$2"
+	out_format="$3"
 	case "$(uname)" in
 		Darwin)
 			if ! dst=$(date -jf "$in_format" "$input" "$out_format"); then
